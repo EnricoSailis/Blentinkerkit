@@ -11,11 +11,11 @@ import numpy as np
 
 
 
-img = Image.open('prova3.jpg')
+img = Image.open('snapshot.jpg')
 pixels = img.load()
 width, height = img.size
-r_width = 275  # larghezza reale dell'immagine in mm
-r_height = 200   # altezza reale dell'immagine in mm
+r_width = 800  # larghezza reale dell'immagine in mm
+r_height = 500   # altezza reale dell'immagine in mm
 img_array = np.array(img)
 print("Le dimensioni dell'immagine sono: ", width, height, "pixel")
 

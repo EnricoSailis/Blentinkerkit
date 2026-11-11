@@ -27,16 +27,16 @@ phi = -3.1415/3     # angolo tra il bone Wrist_vertical e l'orizzontale, -3.1415
 
 # angoli della pinza
 gripopen =  0.6981 # Angolo della pinza aperta gripopen, 0.6981 in radianti equivale a 40°  
-gripeng = 0.2792   # Angolo della pinza in presa gripeng, 0.2792 in radianti equivale a 16°
+gripeng = 0.1745   # Angolo della pinza in presa gripeng, 0.1745 in radianti equivale a 14°
 gripclose = 0.0    # Angolo della pinza chiusa griclose, 0.0 in radianti equivale a 0°
 
 # angoli di rotazione dei bones nella posizione a riposo del braccio
 theta1 = 0.0        # angolo del bone Base (y_R)
-theta2 = 2.3561     # angolo del bone Arm (z_R), 2.3561 corrisponde a 135°
-theta3 = 0.0        # angolo del bone Forearm (z_R) rispetto all'asse del bone Arm
-theta4 = 0.0        # angolo del bone Wrist_vertical (z_R) rispetto all'asse del bone Forearm
+theta2 = 2.3561     # angolo del bone Arm (x_R), 2.3561 corrisponde a 135°
+theta3 = 0.0        # angolo del bone Forearm (x_R) rispetto all'asse del bone Arm
+theta4 = 0.0        # angolo del bone Wrist_vertical (x_R) rispetto all'asse del bone Forearm
 theta5 = 0.0        # angolo del bone Wrist_rotation (y_R)
-theta6 = gripclose  # angolo del bone Gear_gripper_2 (x_R) per l'apertura e la chiusura della pinza
+theta6 = gripclose  # angolo del bone Gripper (z_R) per l'apertura e la chiusura della pinza
 
 
 
@@ -83,13 +83,13 @@ def presaCube(theta1, theta2, theta3, theta4):
 
     Sequenza di azioni per la presa dell'oggetto Cube:
     
-    frames: 1   → 30:  Apertura pinza Gear_gripper_2: (x_R: 0° —> gripopen)
+    frames: 1   → 30:  Apertura pinza Gripper: (x_R: 0° —> gripopen)
     frames: 30  → 60:  Piegamento polso Wrist_vertical: (z_R: 0° —> 45°)  
     frames: 60  → 90:  Rotazione bone Base: (y_R: 0° —> theta1)
     frames: 90  → 120: Rotazione polso Wrist_vertical: (z_R: 45° —> theta4 + 90°)
     frames: 120 → 150: Rotazione avambraccio Forearm: (z_R: 0° —> theta3 + 90°)
     frames: 150 → 180: Rotazione spalla Arm: (z_R: 135° → theta2)
-    frames: 180 → 210: Chiusura pinza Gear_gripper_2 per la presa: (x_R: gripopen —> gripeng)
+    frames: 180 → 210: Chiusura pinza Gripper per la presa: (x_R: gripopen —> gripeng)
     '''
     
     
@@ -103,40 +103,40 @@ def presaCube(theta1, theta2, theta3, theta4):
 
     
     # Angolo pinza aperta: gripopen ; angolo pinza in presa: gripeng 
-    # Apertura pinza Gear_gripper_2: (x_R: gripclose —> gripopen , frames: 1 —> 30), (x_R = gripopen, frames: 30 —> 180), (x_R:  gripopen —> gripeng, frames: 180 —> 210);
+    # Apertura pinza Gripper: (x_R: gripclose —> gripopen , frames: 1 —> 30), (x_R = gripopen, frames: 30 —> 180), (x_R:  gripopen —> gripeng, frames: 180 —> 210);
 
     # Riferimento al bone da animare
-    bone_name = "Gear_gripper_2"          # bone da animare
+    bone_name = "Gripper"          # bone da animare
     pose_bone = armature.pose.bones[bone_name]
     pose_bone.rotation_mode = 'XYZ'
     
     # Imposta rotazione al frame 1 
-    pose_bone.rotation_euler = (gripclose, 0.0, 0.0)  
+    pose_bone.rotation_euler = ( 0.0, 0.0, -gripclose)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=1)
 
     # Imposta rotazione al frame 30 
-    pose_bone.rotation_euler = (gripopen, 0.0, 0.0)  
+    pose_bone.rotation_euler = ( 0.0 , 0.0, -gripopen)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=30)
 
     # Imposta costantemente l'apertura della pinza fino al frame 180 
-    pose_bone.rotation_euler = (gripopen, 0.0, 0.0)  
+    pose_bone.rotation_euler = ( 0.0, 0.0, -gripopen)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=180)
 
-    # Chiusura pinza Gear_gripper_2 per la presa: (x_R: gripopen —> gripeng, frames: 180 —> 210)
-    pose_bone.rotation_euler = (gripeng, 0.0, 0.0)  
+    # Chiusura pinza Gripper per la presa: (x_R: gripopen —> gripeng, frames: 180 —> 210)
+    pose_bone.rotation_euler = ( 0.0 , 0.0, -gripeng)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=210)
 
 
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC 
-    # Creiamo i frames per il Cubo_Dati_Gear_Gripper_2
+    # Creiamo i frames per il Cubo_Dati_Gripper
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Arm da animare
-    object_name = "Cubo_Dati_Gear_Gripper_2"         
+    # Riferimento al Cubo_Dati_Gripper da animare
+    object_name = "Cubo_Dati_Gripper"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -145,22 +145,22 @@ def presaCube(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'
 
     # Imposta rotazione al frame 1 
-    obj.rotation_euler = (gripclose, 0.0, 0.0)  
+    obj.rotation_euler = ( 0.0, 0.0, gripclose)  
     obj.keyframe_insert(data_path="rotation_euler", frame=1)
 
     # Imposta rotazione al frame 30 
-    obj.rotation_euler = (gripopen, 0.0, 0.0)  
+    obj.rotation_euler = ( 0.0, 0.0, gripopen)  
     obj.keyframe_insert(data_path="rotation_euler", frame=30)
 
     # Imposta costantemente l'apertura della pinza fino al frame 180 
-    obj.rotation_euler = (gripopen, 0.0, 0.0)  
+    obj.rotation_euler = ( 0.0, 0.0, gripopen)  
     obj.keyframe_insert(data_path="rotation_euler", frame=180)
 
-    # Chiusura pinza Gear_gripper_2 per la presa: (x_R: gripopen —> gripeng, frames: 180 —> 210)
-    obj.rotation_euler = (gripeng, 0.0, 0.0)  
+    # Chiusura pinza Gripper per la presa: (x_R: gripopen —> gripeng, frames: 180 —> 210)
+    obj.rotation_euler = ( 0.0, 0.0, gripeng)  
     obj.keyframe_insert(data_path="rotation_euler", frame=210)
 
-
+    
 
 
       # Piegamento polso Wrist_vertical: (z_R = 0°, frames: 1 → 30), (z_R: 0° → 45°, frames: 30 → 60), (z_R = 45° , frames: 60 → 90 ), (z_R: 45° → theta4 + 90°, frames: 90 → 120 )
@@ -179,31 +179,31 @@ def presaCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=30)
 
     # Imposta rotazione al frame 60 
-    pose_bone.rotation_euler = (0.0, 0.0, 0.7854)  # 0.7854 in radianti equivale a 45°
+    pose_bone.rotation_euler = (0.7854, 0.0, 0.0 )  # 0.7854 in radianti equivale a 45°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=60)
     
      # Imposta rotazione al frame 90 
-    pose_bone.rotation_euler = (0.0, 0.0, 0.7854)  # 0.7854 in radianti equivale a 45°
+    pose_bone.rotation_euler = (0.7854, 0.0, 0.0 )  # 0.7854 in radianti equivale a 45°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=90)
 
      # Imposta rotazione al frame 120 
-    pose_bone.rotation_euler = (0.0, 0.0, theta4 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    pose_bone.rotation_euler = (theta4 + 1.5708, 0.0, 0.0 )  # 1.5708 in radianti equivale a 90°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=120)
 
      # Imposta rotazione al frame 210 
-    pose_bone.rotation_euler = (0.0, 0.0, theta4 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    pose_bone.rotation_euler = (theta4 + 1.5708, 0.0, 0.0 )  # 1.5708 in radianti equivale a 90°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=210)
 
 
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC 
     # Creiamo i frames per il Cubo_Dati_Wrist_Vertical
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Arm da animare
+    # Riferimento al Cubo_Dati_Wrist_Vertical da animare
     object_name = "Cubo_Dati_Wrist_Vertical"         
     
     # Recupera l'oggetto tramite il suo nome
@@ -221,22 +221,22 @@ def presaCube(theta1, theta2, theta3, theta4):
     obj.keyframe_insert(data_path="rotation_euler", frame=30)
 
     # Imposta rotazione al frame 60 
-    obj.rotation_euler = (0.0, 0.0, 0.7854)  # 0.7854 in radianti equivale a 45°
+    obj.rotation_euler = (0.7854, 0.0, 0.0)  # 0.7854 in radianti equivale a 45°
     obj.keyframe_insert(data_path="rotation_euler", frame=60)
     
      # Imposta rotazione al frame 90 
-    obj.rotation_euler = (0.0, 0.0, 0.7854)  # 0.7854 in radianti equivale a 45°
+    obj.rotation_euler = (0.7854, 0.0, 0.0)  # 0.7854 in radianti equivale a 45°
     obj.keyframe_insert(data_path="rotation_euler", frame=90)
 
      # Imposta rotazione al frame 120 
-    obj.rotation_euler = (0.0, 0.0, theta4 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    obj.rotation_euler = (theta4 + 1.5708, 0.0, 0.0)  # 1.5708 in radianti equivale a 90°
     obj.keyframe_insert(data_path="rotation_euler", frame=120)
 
      # Imposta rotazione al frame 210 
-    obj.rotation_euler = (0.0, 0.0, theta4 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    obj.rotation_euler = (theta4 + 1.5708, 0.0, 0.0)  # 1.5708 in radianti equivale a 90°
     obj.keyframe_insert(data_path="rotation_euler", frame=210)
 
-
+    
 
 
    
@@ -268,10 +268,10 @@ def presaCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=240)
 
 
-    '''
-    Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC ci si avvale dell'addon Blendixserial che purtroppo non consente di selezionare i Bone. Pertanto sono stati costruiti dei cubi "dati" che ruotano seguendo i bone corrispondenti da cui possiamo leggere frame per frame gli angoli theta1, theta2, theta3, theta4 dei bone che ruotano (Base, Arm, Forearm, Wrist_vertical). Creiamo i frames per il Cubo_Dati_Base 
+    
+    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC ci si avvale dell'addon Blendixserial che purtroppo non consente di selezionare i Bone. Pertanto sono stati costruiti dei cubi "dati" che ruotano seguendo i bone corrispondenti da cui possiamo leggere frame per frame gli angoli theta1, theta2, theta3, theta4 dei bone che ruotano (Base, Arm, Forearm, Wrist_vertical). Creiamo i frames per il Cubo_Dati_Base 
 
-    '''
+    
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
@@ -304,7 +304,7 @@ def presaCube(theta1, theta2, theta3, theta4):
     obj.rotation_euler = (0.0, theta1, 0.0) # theta1 calcolato in radianti in base alla posizione dell'oggetto Cube
     obj.keyframe_insert(data_path="rotation_euler", frame=240)
 
-
+    
 
 
 # Rotazione dell'avambraccio Forearm: (z_R = 0°, frames: 1 → 120), (z_R: 0° → theta3 + 90°, frames: 120 → 150)
@@ -323,23 +323,23 @@ def presaCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=120)
 
     # Imposta rotazione al frame 150 
-    pose_bone.rotation_euler = (0.0, 0.0, theta3 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    pose_bone.rotation_euler = (theta3 + 1.5708, 0.0, 0.0 )  # 1.5708 in radianti equivale a 90°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=150)
 
     # Imposta rotazione al frame 210 
-    pose_bone.rotation_euler = (0.0, 0.0, theta3 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    pose_bone.rotation_euler = (theta3 + 1.5708, 0.0, 0.0 )  # 1.5708 in radianti equivale a 90°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=210)
 
 
-    '''
-    Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_ForeArm 
+    
+    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Forearm 
 
-    '''
+    
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
     # Riferimento al Cubo_Dati_Base da animare
-    object_name = "Cubo_Dati_ForeArm"         
+    object_name = "Cubo_Dati_Forearm"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -356,14 +356,14 @@ def presaCube(theta1, theta2, theta3, theta4):
     obj.keyframe_insert(data_path="rotation_euler", frame=120)
 
     # Imposta rotazione al frame 150 
-    obj.rotation_euler = (0.0, 0.0, theta3 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    obj.rotation_euler = (theta3 + 1.5708, 0.0, 0.0 )  # 1.5708 in radianti equivale a 90°
     obj.keyframe_insert(data_path="rotation_euler", frame=150)
 
     # Imposta rotazione al frame 210 
-    obj.rotation_euler = (0.0, 0.0, theta3 + 1.5708)  # 1.5708 in radianti equivale a 90°
+    obj.rotation_euler = (theta3 + 1.5708, 0.0, 0.0)  # 1.5708 in radianti equivale a 90°
     obj.keyframe_insert(data_path="rotation_euler", frame=210)
 
-
+    
 
 
 
@@ -375,19 +375,19 @@ def presaCube(theta1, theta2, theta3, theta4):
     pose_bone.rotation_mode = 'XYZ'  
 
     # Imposta rotazione al frame 1 
-    pose_bone.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 135°
+    pose_bone.rotation_euler = (2.3561, 0.0, 0.0 )  # 2.3561 in radianti equivalente a 135°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=1)
 
     # Imposta rotazione al frame 150 
-    pose_bone.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 145°
+    pose_bone.rotation_euler = (2.3561, 0.0, 0.0 )  # 2.3561 in radianti equivalente a 145°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=150)
 
     # Imposta rotazione al frame 180 
-    pose_bone.rotation_euler = (0.0, 0.0, theta2)  # 
+    pose_bone.rotation_euler = (theta2, 0.0, 0.0 )  # 
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=180)
 
     # Imposta rotazione al frame 210 
-    pose_bone.rotation_euler = (0.0, 0.0, theta2)  # 
+    pose_bone.rotation_euler = (theta2, 0.0, 0.0 )  # 
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=210)
   
   
@@ -396,7 +396,10 @@ def presaCube(theta1, theta2, theta3, theta4):
 
 
     '''
-    Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC ci si avvale dell'addon Blendixserial che purtroppo non consente di selezionare i Bone. Pertanto sono stati costruiti dei cubi "dati" che ruotano seguendo i bone corrispondenti da cui possiamo leggere frame per frame gli angoli theta1, theta2, theta3, theta4 dei bone che ruotano (Base, Arm, Forearm, Wrist_vertical). 
+    # Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC ci si avvale dell'addon 
+    Blendixserial che purtroppo non consente di selezionare i Bone. Pertanto sono stati costruiti dei cubi "dati" 
+    che ruotano seguendo i bone corrispondenti da cui possiamo leggere frame per frame gli angoli 
+    theta1, theta2, theta3, theta4 dei bone che ruotano (Base, Arm, Forearm, Wrist_vertical, Gripper). 
 
     '''
 
@@ -413,21 +416,21 @@ def presaCube(theta1, theta2, theta3, theta4):
     
     # Imposta la rotazione a su tutti gli assi
     obj.rotation_mode = 'XYZ'
-    obj.rotation_euler = (0.0, 0.0, 2.3561) # 2.3561 in radianti equivalente a 145°
+    obj.rotation_euler = (2.3561, 0.0, 0.0 ) # 2.3561 in radianti equivalente a 145°
 
     # Inserisce il keyframe per la rotazione nel frame=1
     obj.keyframe_insert(data_path="rotation_euler", frame=1)
 
     # Imposta rotazione al frame 150 
-    obj.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 145°
+    obj.rotation_euler = (2.3561, 0.0, 0.0)  # 2.3561 in radianti equivalente a 145°
     obj.keyframe_insert(data_path="rotation_euler", frame=150)
 
     # Imposta rotazione al frame 180 
-    obj.rotation_euler = (0.0, 0.0, theta2)  # 
+    obj.rotation_euler = (theta2, 0.0, 0.0)  # 
     obj.keyframe_insert(data_path="rotation_euler", frame=180)
 
     # Imposta rotazione al frame 210 
-    obj.rotation_euler = (0.0, 0.0, theta2)  # 
+    obj.rotation_euler = (theta2, 0.0, 0.0)  # 
     obj.keyframe_insert(data_path="rotation_euler", frame=210)
 
     
@@ -451,7 +454,7 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     Rotazione spalla Arm:  (z_R : 135° —> theta2, frames: 270 —> 300)
     Rotazione dell'avambraccio Forearm: (z_R: 0° —> theta3 + 90° , frames: 270 —> 300)
     Rotazione del polso Wrist_vertical: (z_R: 45° → theta4 + 90° , frames: 270 → 300)
-    Apertura pinza Gear_gripper_2: (x_R : gripeng —> gripopen, frames: 300 —> 330)
+    Apertura pinza Gripper: (x_R : gripeng —> gripopen, frames: 300 —> 330)
 
     '''
 
@@ -473,19 +476,19 @@ def trasportoCube(theta1, theta2, theta3, theta4):
 
 
     # Imposta rotazione al frame 240 
-    pose_bone.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 135°
+    pose_bone.rotation_euler = (2.3561, 0.0, 0.0 )  # 2.3561 in radianti equivalente a 135°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=240)
 
     # Imposta rotazione al frame 270 
-    pose_bone.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 135°
+    pose_bone.rotation_euler = (2.3561, 0.0, 0.0)  # 2.3561 in radianti equivalente a 135°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=270)
 
     # Imposta rotazione al frame 300 
-    pose_bone.rotation_euler = (0.0, 0.0, theta2)  
+    pose_bone.rotation_euler = (theta2, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=300)
     
      # Imposta rotazione al frame 330 
-    pose_bone.rotation_euler = (0.0, 0.0, theta2)  
+    pose_bone.rotation_euler = (theta2, 0.0, 0.0)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
 
     
@@ -505,19 +508,19 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'
     
     # Imposta rotazione al frame 240 
-    obj.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 135°
+    obj.rotation_euler = (2.3561, 0.0, 0.0 )  # 2.3561 in radianti equivalente a 135°
     obj.keyframe_insert(data_path="rotation_euler", frame=240)
 
     # Imposta rotazione al frame 270 
-    obj.rotation_euler = (0.0, 0.0, 2.3561)  # 2.3561 in radianti equivalente a 135°
+    obj.rotation_euler = (2.3561, 0.0, 0.0 )  # 2.3561 in radianti equivalente a 135°
     obj.keyframe_insert(data_path="rotation_euler", frame=270)
 
     # Imposta rotazione al frame 300 
-    obj.rotation_euler = (0.0, 0.0, theta2)  
+    obj.rotation_euler = (theta2, 0.0, 0.0 )  
     obj.keyframe_insert(data_path="rotation_euler", frame=300)
     
      # Imposta rotazione al frame 330 
-    obj.rotation_euler = (0.0, 0.0, theta2)  
+    obj.rotation_euler = (theta2, 0.0, 0.0 )  
     obj.keyframe_insert(data_path="rotation_euler", frame=330)
 
     
@@ -538,22 +541,22 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=270)
     
     # Imposta rotazione al frame 300 
-    pose_bone.rotation_euler = (0.0, 0.0, theta3 + 3.1415/2)  
+    pose_bone.rotation_euler = (theta3 + 3.1415/2, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=300)
     
     # Imposta rotazione al frame 330 
-    pose_bone.rotation_euler = (0.0, 0.0, theta3 + 3.1415/2)  
+    pose_bone.rotation_euler = (theta3 + 3.1415/2, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
 
 
     
-    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_ForeArm 
+    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Forearm 
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
     # Riferimento al Cubo_Dati_Base da animare
-    object_name = "Cubo_Dati_ForeArm"         
+    object_name = "Cubo_Dati_Forearm"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -570,14 +573,14 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     obj.keyframe_insert(data_path="rotation_euler", frame=270)
     
     # Imposta rotazione al frame 300 
-    obj.rotation_euler = (0.0, 0.0, theta3 + 3.1415/2)  
+    obj.rotation_euler = (theta3 + 3.1415/2, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=300)
     
     # Imposta rotazione al frame 330 
-    obj.rotation_euler = (0.0, 0.0, theta3 + 3.1415/2)  
+    obj.rotation_euler = (theta3 + 3.1415/2, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=330)
 
-
+    
 
     # Piegamento polso Wrist_vertical: (z_R = theta4 + 90° → 45°, frames: 210 → 240), (z_R: 45° → theta4 + 90° , frames: 270 → 300)
 
@@ -587,29 +590,29 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     pose_bone.rotation_mode = 'XYZ'  
 
     # Imposta rotazione al frame 240 
-    pose_bone.rotation_euler = (0.0, 0.0, 3.1415/4)  
+    pose_bone.rotation_euler = (3.1415/4, 0.0, 0.0)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=240)
 
     # Imposta rotazione al frame 270 
-    pose_bone.rotation_euler = (0.0, 0.0, 3.1415/4)  
+    pose_bone.rotation_euler = (3.1415/4, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=270)
 
     # Imposta rotazione al frame 300 
-    pose_bone.rotation_euler = (0.0, 0.0, theta4 + 3.1415/2)  
+    pose_bone.rotation_euler = (theta4 + 3.1415/2, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=300)
 
     # Imposta rotazione al frame 330 
-    pose_bone.rotation_euler = (0.0, 0.0, theta4 + 3.1415/2)  
+    pose_bone.rotation_euler = (theta4 + 3.1415/2, 0.0, 0.0 )  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC 
     # Creiamo i frames per il Cubo_Dati_Wrist_Vertical
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Arm da animare
+    # Riferimento al Cubo_Dati_Wrist_Vertical da animare
     object_name = "Cubo_Dati_Wrist_Vertical"         
     
     # Recupera l'oggetto tramite il suo nome
@@ -619,22 +622,22 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'
 
     # Imposta rotazione al frame 240 
-    obj.rotation_euler = (0.0, 0.0, 3.1415/4)  
+    obj.rotation_euler = (3.1415/4, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=240)
 
     # Imposta rotazione al frame 270 
-    obj.rotation_euler = (0.0, 0.0, 3.1415/4)  
+    obj.rotation_euler = (3.1415/4, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=270)
 
     # Imposta rotazione al frame 300 
-    obj.rotation_euler = (0.0, 0.0, theta4 + 3.1415/2)  
+    obj.rotation_euler = (theta4 + 3.1415/2, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=300)
 
     # Imposta rotazione al frame 330 
-    obj.rotation_euler = (0.0, 0.0, theta4 + 3.1415/2)  
+    obj.rotation_euler = (theta4 + 3.1415/2, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=330)
 
-
+    
 
 
     # Rotazione bone Base:  (y_R: theta1 —> 0°, frames: 240 —> 270)
@@ -653,14 +656,14 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
 
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC 
     # Creiamo i frames per il Cubo_Dati_Base
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Arm da animare
+    # Riferimento al Cubo_Dati_Base da animare
     object_name = "Cubo_Dati_Base"         
     
     # Recupera l'oggetto tramite il suo nome
@@ -678,36 +681,37 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
 
 
+    
 
 
-    # Apertura pinza Gear_gripper_2: (x_R : gripeng —> gripopen, frames: 300 —> 330 )
+    # Apertura pinza Gripper: (x_R : gripeng —> gripopen, frames: 300 —> 330 )
 
     # Riferimento al bone da animare
-    bone_name = "Gear_gripper_2" 
+    bone_name = "Gripper" 
     pose_bone = armature.pose.bones[bone_name]
     pose_bone.rotation_mode = 'XYZ'
 
     # Imposta rotazione al frame 300 
-    pose_bone.rotation_euler = (gripeng, 0.0, 0.0)  # pinza in presa
+    pose_bone.rotation_euler = ( 0.0, 0.0, -gripeng)  # pinza in presa
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=300)
 
     # Imposta rotazione al frame 330 
-    pose_bone.rotation_euler = (gripopen, 0.0, 0.0)  # pinza aperta
+    pose_bone.rotation_euler = ( 0.0, 0.0, -gripopen)  # pinza aperta
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=330)
     
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
 
-
+   
 
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC 
-    # Creiamo i frames per il Cubo_Dati_Gear_Gripper_2
+    # Creiamo i frames per il Cubo_Dati_Gripper
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Arm da animare
-    object_name = "Cubo_Dati_Gear_Gripper_2"         
+    # Riferimento al Cubo_Dati_Gripper da animare
+    object_name = "Cubo_Dati_Gripper"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -716,17 +720,18 @@ def trasportoCube(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'
 
     # Imposta rotazione al frame 300 
-    obj.rotation_euler = (gripeng, 0.0, 0.0)  # pinza in presa
+    obj.rotation_euler = (0.0, 0.0, gripeng)  # pinza in presa
     obj.keyframe_insert(data_path="rotation_euler", frame=300)
 
     # Imposta rotazione al frame 330 
-    obj.rotation_euler = (gripopen, 0.0, 0.0)  # pinza aperta
+    obj.rotation_euler = (0.0, 0.0, gripopen)  # pinza aperta
     obj.keyframe_insert(data_path="rotation_euler", frame=330)
 
 
-    '''
-    Terminine delle azioni per il trasporto dell'oggetto
-    '''
+
+    
+    #Terminine delle azioni per il trasporto dell'oggetto
+    
 
 
 
@@ -738,8 +743,8 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     Rotazione spalla Arm:  (zR : theta2 —> 135° , frames: 330 —> 360)
     Rotazione avambraccio Forearm: (zR : theta3 + 90° —> 0° , frames: 330 —> 360)
     Piegamento polso posizione riposo  Wrist_vertical: ( zR : theta4 + 90° → 0°, frames: 330 → 360)
-    Pinza sempre aperta Gear_gripper_2:  ( xR = gripopen, frames: 330 → 360)
-    Chiusura pinza Gear_gripper_2 in riposo:  ( xR : gripopen → gripclose, frames: 360 → 390)
+    Pinza sempre aperta Gripper:  ( xR = gripopen, frames: 330 → 360)
+    Chiusura pinza Gripper in riposo:  ( xR : gripopen → gripclose, frames: 360 → 390)
     Rotazione della base Base a riposo: (yR = theta1 , frames: 330 —> 360), (yR : theta1 —> 0° , frames: 360 —> 390)
 
     '''
@@ -762,10 +767,10 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
 
     # Imposta rotazione al frame 360 
     pose_bone.rotation_mode = 'XYZ'  
-    pose_bone.rotation_euler = (0.0, 0.0, 3*3.1415/4)  # 3/4 pigreco in radianti equivale a 135°
+    pose_bone.rotation_euler = (3*3.1415/4, 0.0, 0.0)  # 3/4 pigreco in radianti equivale a 135°
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=360)
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC Creiamo i frames per il Cubo_Dati_Arm
        
     # Torna in modalità oggetto
@@ -781,10 +786,10 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'
     
     # Imposta rotazione al frame 360 
-    obj.rotation_euler = (0.0, 0.0, 3*3.1415/4)  # 3/4 pigreco in radianti equivale a 135°
+    obj.rotation_euler = (3*3.1415/4, 0.0, 0.0 )  # 3/4 pigreco in radianti equivale a 135°
     obj.keyframe_insert(data_path="rotation_euler", frame=360)
 
-
+    
 
 
     # Rotazione avambraccio Forearm in posizione riposo: (zR : theta3 —> 0° , frames: 330 —> 360)
@@ -801,14 +806,14 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     pose_bone.rotation_euler = (0.0, 0.0, 0.0)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=360)
 
-
-    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_ForeArm 
+    
+    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Forearm 
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
     # Riferimento al Cubo_Dati_Base da animare
-    object_name = "Cubo_Dati_ForeArm"         
+    object_name = "Cubo_Dati_Forearm"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -822,7 +827,7 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     obj.keyframe_insert(data_path="rotation_euler", frame=360)
 
 
-
+    
 
     # Piegamento polso posizione riposo  Wrist_vertical: (zR : theta4 + 90° → 0°, frames: 330 → 360)
 
@@ -838,7 +843,7 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     pose_bone.rotation_euler = (0.0, 0.0, 0.0)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=360)
 
-
+   
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Wrist_Vertical 
 
     # Torna in modalità oggetto
@@ -857,11 +862,12 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     obj.rotation_euler = (0.0, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=360)
 
-
-    # Chiusura pinza Gear_gripper_2 in riposo: (xR = gripopen, frames: 330 → 360), ( xR : gripopen → gripclose, frames: 360 → 390)
+    
+    
+    # Chiusura pinza Gripper in riposo: (xR = gripopen, frames: 330 → 360), ( xR : gripopen → gripclose, frames: 360 → 390)
 
     # Riferimento al bone da animare
-    bone_name = "Gear_gripper_2" 
+    bone_name = "Gripper" 
     pose_bone = armature.pose.bones[bone_name]
 
     # Assicurati di essere in modalità 'POSE'
@@ -869,24 +875,24 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
 
     # Imposta rotazione al frame 360 
     pose_bone.rotation_mode = 'XYZ'  
-    pose_bone.rotation_euler = (gripopen, 0.0, 0.0)  
+    pose_bone.rotation_euler = (0.0, 0.0, -gripopen)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=360)
 
     # Imposta rotazione al frame 390 
     pose_bone.rotation_mode = 'XYZ' 
-    pose_bone.rotation_euler = (gripclose, 0.0, 0.0)  
+    pose_bone.rotation_euler = (0.0, 0.0, -gripclose)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=390)
 
 
+    
 
-
-    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Gear_Gripper_2 
+    #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Gripper 
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
   
-    # Riferimento al Cubo_Dati_Gear_Gripper_2 da animare
-    object_name = "Cubo_Dati_Gear_Gripper_2"         
+    # Riferimento al Cubo_Dati_Gripper da animare
+    object_name = "Cubo_Dati_Gripper"         
     
     # Recupera l'oggetto tramite il suo nome
     obj = bpy.data.objects.get(object_name)   
@@ -895,14 +901,14 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     obj.rotation_mode = 'XYZ'  
 
     # Imposta rotazione al frame 360 
-    obj.rotation_euler = (gripopen, 0.0, 0.0)  
+    obj.rotation_euler = ( 0.0, 0.0, gripopen)  
     obj.keyframe_insert(data_path="rotation_euler", frame=360)
 
     # Imposta rotazione al frame 390 
-    obj.rotation_euler = (gripclose, 0.0, 0.0)  
+    obj.rotation_euler = (0.0, 0.0, gripclose)  
     obj.keyframe_insert(data_path="rotation_euler", frame=390)
 
-
+    
 
     # Rotazione del bone Base a riposo: (yR = theta1 , frames: 330 —> 360), (yR : theta1 —> 0° , frames: 360 —> 390)
     
@@ -923,7 +929,7 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     pose_bone.rotation_euler = (0.0, 0.0, 0.0)  
     pose_bone.keyframe_insert(data_path="rotation_euler", frame=390)
 
-
+    
     #Per comandare i servomotori l'interfaccia di blender con la porta seriale del PC creiamo i frames per il Cubo_Dati_Base
 
     # Torna in modalità oggetto
@@ -946,7 +952,7 @@ def braccioaRiposo(theta1, theta2, theta3, theta4):
     obj.rotation_euler = (0.0, 0.0, 0.0)  
     obj.keyframe_insert(data_path="rotation_euler", frame=390)
 
-
+    
 
     # Torna in modalità oggetto
     bpy.ops.object.mode_set(mode='OBJECT')
@@ -1126,10 +1132,10 @@ def posizioneCube():
     return location
   
   
-def posizioneTarghet():
+def posizioneTarget():
     # rileva la posizione  dell'oggetto Circle dove depositare l'oggetto Cube
     # Nome dell'oggetto da leggere
-    object_name = "Targhet"  
+    object_name = "Target"  
 
     # Verifica che l'oggetto esista nella scena
     if object_name in bpy.data.objects:
@@ -1163,43 +1169,46 @@ def rimuoviAnimazioni():
         if c.type == "CHILD_OF":
             cube_obj.constraints.remove(c)
    
+    
     # rimozione delle animazioni di Cubo_Dati_Base
     object_name = "Cubo_Dati_Base" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
-   
+    
+    
     # rimozione delle animazioni di Cubo_Dati_Arm
     object_name = "Cubo_Dati_Arm" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
+    
 
-    # rimozione delle animazioni di Cubo_Dati_ForeArm
-    object_name = "Cubo_Dati_ForeArm" 
+    # rimozione delle animazioni di Cubo_Dati_Forearm
+    object_name = "Cubo_Dati_Forearm" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
-
+    
     # rimozione delle animazioni di Cubo_Wrist_Vertical
     object_name = "Cubo_Dati_Wrist_Vertical" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
-
-    # rimozione delle animazioni di Cubo_Dati_Wrist_rotation
-    object_name = "Cubo_Dati_Wrist_rotation" 
+    
+    # rimozione delle animazioni di Cubo_Dati_Wrist_Rotation
+    object_name = "Cubo_Dati_Wrist_Rotation" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
 
-    # rimozione delle animazioni di Cubo_Dati_Gear_Gripper_2
-    object_name = "Cubo_Dati_Gear_Gripper_2" 
+    # rimozione delle animazioni di Cubo_Dati_Gripper
+    object_name = "Cubo_Dati_Gripper" 
     cube_obj = bpy.data.objects.get(object_name)
     if cube_obj.animation_data:
         cube_obj.animation_data_clear()   
 
-
+    
 
 
 
@@ -1213,7 +1222,8 @@ def rilevaMattoncino():
     # Essi sono immessi in un array di dimensione 3: [R, G, B] per ciascun pixel
     # Le dimensioni dell'immagine in pixel è  width x height
 
-    img = Image.open('/Users/enrico/Documents/blentinkerkit/prova5.jpg')
+    # si assume che la foto da cui ricavare la posizione della spugnetta da spostare sia nel file prova5.jpg
+    img = Image.open('/Users/enrico/Documents/Blentinkerkit_new/Python/snapshot.jpg') 
     pixels = img.load()
     width, height = img.size
     r_width = 800  # larghezza reale dell'immagine in mm
@@ -1269,7 +1279,7 @@ def main():
     
     rimuoviAnimazioni()             # rimuove le precedenti animazioni
     
-    rilevaMattoncino()              # rileva la posizione del mattoncino nella fotografia
+    #rilevaMattoncino()              # rileva la posizione del mattoncino nella fotografia
     
     (x, y, z) = posizioneCube()     # determina la posizione dell'oggetto Cube da prendere
     
@@ -1280,7 +1290,7 @@ def main():
     
     aggancioCube(x, y, z, theta1, theta2, theta3, theta4)
     
-    (tx, ty, tz) = posizioneTarghet()
+    (tx, ty, tz) = posizioneTarget()
     (theta1, theta2, theta3, theta4) = angoliPresaRilascioCube(tx, ty, tz)
     trasportoCube(theta1, theta2, theta3, theta4)
     sgancioCube()
